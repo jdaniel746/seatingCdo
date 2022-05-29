@@ -966,7 +966,7 @@ class App extends Component {
                             addSeatCallback={this.addSeatCallbackContinousCase}
                             removeSeatCallback={this.removeSeatCallback}
                             rows={izq}
-                            maxReservableSeats={3}
+                            maxReservableSeats={65}
                             alpha
                             visible
                             selectedByDefault
@@ -983,7 +983,7 @@ class App extends Component {
                             addSeatCallback={this.addSeatCallbackContinousCase}
                             removeSeatCallback={this.removeSeatCallback}
                             rows={der}
-                            maxReservableSeats={3}
+                            maxReservableSeats={78}
                             alpha
                             visible
                             selectedByDefault
@@ -999,7 +999,7 @@ class App extends Component {
                             addSeatCallback={this.addSeatCallbackContinousCase}
                             removeSeatCallback={this.removeSeatCallback}
                             rows={ala1Izq}
-                            maxReservableSeats={3}
+                            maxReservableSeats={130}
                             alpha
                             visible
                             selectedByDefault
@@ -1013,7 +1013,7 @@ class App extends Component {
                             addSeatCallback={this.addSeatCallbackContinousCase}
                             removeSeatCallback={this.removeSeatCallback}
                             rows={rowsCentro}
-                            maxReservableSeats={3}
+                            maxReservableSeats={212}
                             alpha
                             visible
                             selectedByDefault
@@ -1027,7 +1027,7 @@ class App extends Component {
                             addSeatCallback={this.addSeatCallbackContinousCase}
                             removeSeatCallback={this.removeSeatCallback}
                             rows={alaDerecha1}
-                            maxReservableSeats={3}
+                            maxReservableSeats={136}
                             alpha
                             visible
                             selectedByDefault
