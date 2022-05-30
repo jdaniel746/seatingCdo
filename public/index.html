@@ -1,42 +1,166 @@
-<html lang="en">
+<html><head>
+		<title>JSC Demo</title>
+		
+		<link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" type="text/css" href="jquery.seat-charts.css">
+		<link rel="stylesheet" type="text/css" href="style.css">
 
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="theme-color" content="#000000">
-	<!--
-      manifest.json provides metadata used when your web app is added to the
-      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
-    -->
-	<link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-	<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-	<!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+	</head>
+	
+	<body>
+		<div class="wrapper">
+			<div class="container">
+				<div id="seat-map" class="seatCharts-container" tabindex="0" aria-activedescendant="4_5">
+			
+				</div>
+				<div class="booking-details">
+					<h2>Detalle de la compra</h2>
+					
+					<h3> Asiento(s) seleccionado(s) (<span id="counter">0</span>):</h3>
+					<ul id="selected-seats"></ul>
+					
+					Total: <b>$<span id="total">0</span></b>
+					
+					<button class="checkout-button">Checkout »</button>
+					
+					<div id="legend" class="seatCharts-legend">
+						
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="jquery.seat-charts.js"></script>
+		
+		<script>
+			var firstSeatLabel = 1;
+		
+			$(document).ready(function() {
+				var $cart = $('#selected-seats'),
+					$counter = $('#counter'),
+					$total = $('#total'),
+					sc = $('#seat-map').seatCharts({
+					map: [
+						'_fff____________________________________________________________________',
+						'ffff____________________________________________________________________',
+						'fffff_____________________________________________________________fffffff',
+						'ffffff____________________________________________________________fffffff',
+						'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
+						'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
+						'fffff____fffffffffffffff__fffffffff____ffffffff__fffffffffffff____fffffff',
+						'fffff___ffffffffffffffff__fffffffff____ffffffff__ffffffffffffff___fffffff',
+						'ffffff__ffffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
+						'fffffff__fffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
+						'fffffffff__fffffffffffff__fffffffff____ffffffff__ffffffffffffff__ffffff__',
+						'__fffffff____fffffffffff__fffffffff____ffffffff__ffffffffffff___fffff____',
+						'____ffffff______ffffffff__fffffffffffffffffffff__ffffffffff____ffffff____',
+						'_____ffffff_______ffffff__fffffffffffffffffffff__fffffff______ffffff_____',
+						'______ffffff________ffff__fffffffffffffffffffff__ffff________fffff_______',
+						'_________ffff_________ff__fffffffffffffffffffff__ff_________ffff_________',
+						'_________________________________________________________________________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff___________________________________fffff______________',
+						'_____________ffffff____________________________________ffff______________',
+						'_____________ffffff____________________________________ffff______________',
+					],
+					seats: {
+						f: {
+							price   : 100,
+							classes : 'first-class', //your custom CSS class
+							category: 'First Class'
+						},
+						e: {
+							price   : 40,
+							classes : 'economy-class', //your custom CSS class
+							category: 'Economy Class'
+						}					
+					
+					},
+					naming : {
+						top : false,
+						getLabel : function (character, row, column) {
+							return firstSeatLabel++;
+						},
+					},
+					legend : {
+						node : $('#legend'),
+					    items : [
+							[ 'f', 'available',   'VIP' ],
+							[ 'e', 'available',   'Clase economica'],
+							[ 'f', 'unavailable', 'Reservado']
+					    ]					
+					},
+					click: function () {
+						if (this.status() == 'available') {
+							//let's create a new <li> which we'll add to the cart items
+							$('<li>'+this.data().category+' Seat # '+this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item">[cancel]</a></li>')
+								.attr('id', 'cart-item-'+this.settings.id)
+								.data('seatId', this.settings.id)
+								.appendTo($cart);
+							
+							/*
+							 * Lets update the counter and total
+							 *
+							 * .find function will not find the current seat, because it will change its stauts only after return
+							 * 'selected'. This is why we have to add 1 to the length and the current seat price to the total.
+							 */
+							$counter.text(sc.find('selected').length+1);
+							$total.text(recalculateTotal(sc)+this.data().price);
+							
+							return 'selected';
+						} else if (this.status() == 'selected') {
+							//update the counter
+							$counter.text(sc.find('selected').length-1);
+							//and total
+							$total.text(recalculateTotal(sc)-this.data().price);
+						
+							//remove the item from our cart
+							$('#cart-item-'+this.settings.id).remove();
+						
+							//seat has been vacated
+							return 'available';
+						} else if (this.status() == 'unavailable') {
+							//seat has been already booked
+							return 'unavailable';
+						} else {
+							return this.style();
+						}
+					}
+				});
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-	<title>CDO</title>
-</head>
+				//this will handle "[cancel]" link clicks
+				$('#selected-seats').on('click', '.cancel-cart-item', function () {
+					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
+					sc.get($(this).parents('li:first').data('seatId')).click();
+				});
 
-<body>
-	<noscript>
-		You need to enable JavaScript to run this app.
-	</noscript>
-	<div id="root"></div>
-	<!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+				//let's pretend some seats have already been booked
+				sc.get(['1_2', '4_1', '7_1', '7_2']).status('unavailable');
+		
+		});
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+		function recalculateTotal(sc) {
+			var total = 0;
+		
+			//basically find every selected seat and sum its price
+			sc.find('selected').each(function () {
+				total += this.data().price;
+			});
+			
+			return total;
+		}
+		
+		</script>
+	
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-</body>
-
-</html>
+</body></html>
