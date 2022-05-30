@@ -56,6 +56,10 @@ div.seatCharts-seat.available {
 	background-color: #B9DEA0;
 
 }
+div.seatCharts-seat.available.platinum-class {
+	/* 	background: url(vip.png); */
+	background-color: #fdf624;
+}
 div.seatCharts-seat.available.first-class {
 /* 	background: url(vip.png); */
 	background-color: #8b7bb9;

@@ -56,8 +56,8 @@
 						'__fffffff____fffffffffff__fffffffff____ffffffff__ffffffffffff___fffff____',
 						'____ffffff______ffffffff__fffffffffffffffffffff__ffffffffff____ffffff____',
 						'_____ffffff_______ffffff__fffffffffffffffffffff__fffffff______ffffff_____',
-						'______ffffff________ffff__fffffffffffffffffffff__ffff________fffff_______',
-						'_________ffff_________gg__ggggggggggggggggggggg__gg_________ffff_________',
+						'______ffffff________ffff__hhhhhhhhhhhhhhhhhhhhh__ffff________fffff_______',
+						'_________ffff_________hh__hhhhhhhhhhhhhhhhhhhhh__hh_________ffff_________',
 						'_________________________________________________________________________',
 						'_____________eeeegg___________________________________ggeee______________',
 						'_____________eeeegg___________________________________ggeee______________',
@@ -74,10 +74,15 @@
 						'_____________eeeegg____________________________________geee______________',
 					],
 					seats: {
+						h: {
+							price   : 40,
+							classes : 'platinum-class', //your custom CSS class
+							category: 'Platinum'
+						},
 						g: {
 							price   : 30,
 							classes : 'first-class', //your custom CSS class
-							category: 'VIP'
+							category: 'Premium'
 						},
 						f: {
 							price   : 10,
@@ -100,8 +105,10 @@
 					legend : {
 						node : $('#legend'),
 					    items : [
-							[ 'f', 'available',   'VIP' ],
-							[ 'e', 'available',   'Clase economica'],
+							[ 'h', 'available',   'Platinum'],
+							[ 'f', 'available',   'Premium' ],
+							[ 'e', 'available',   'General'],
+							[ 'g', 'available',   'Preferencial'],
 							[ 'f', 'unavailable', 'Reservado']
 					    ]					
 					},
