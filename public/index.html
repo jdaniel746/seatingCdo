@@ -4,6 +4,7 @@
 		<link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" type="text/css" href="jquery.seat-charts.css">
 		<link rel="stylesheet" type="text/css" href="style.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
 	</head>
 	
@@ -14,6 +15,7 @@
 
 				</div>
 				<div class="booking-details">
+					<div id="legend" class="seatCharts-legend"></div>
 					<h2>Detalle de la compra</h2>
 					
 					<h3> Asiento(s) seleccionado(s) (<span id="counter">0</span>):</h3>
@@ -21,22 +23,74 @@
 					
 					Total: <b>$<span id="total">0</span></b>
 					
-					<button class="checkout-button">Checkout »</button>
-					
-					<div id="legend" class="seatCharts-legend">
-						
+					<button  class="checkout-button" data-toggle="modal" data-target="#myModal">Reservar</button>
+				</div>
+				<!-- Modal -->
+				<div class="modal fade" id="myModal" role="dialog">
+					<div class="modal-dialog">
+
+						<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Modal Header</h4>
+							</div>
+							<div class="modal-body">
+								<form>
+									<fieldset>
+										<label for="name">Nombres</label>
+										<input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all">
+										<label for="email">Email</label>
+										<input type="text" name="email" id="email"  class="text ui-widget-content ui-corner-all">
+										<label for="phone">Telefono</label>
+										<input type="text" name="phone" id="phone"  class="text ui-widget-content ui-corner-all">
+									</fieldset>
+								</form>
+							</div>
+							<div class="modal-footer">
+								<button type="button" id="reservation" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+
 					</div>
 				</div>
 			</div>
 		</div>
-		
 		<script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
 		<script src="jquery.seat-charts.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 		
-		<script>
+		<script type="module">
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-app.js";
+			import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-analytics.js";
+			import { getDatabase, ref, set, child, update, remove, onValue} from "https://www.gstatic.com/firebasejs/9.8.2/firebase-database.js"
+			// TODO: Add SDKs for Firebase products that you want to use
+			// https://firebase.google.com/docs/web/setup#available-libraries
+
+			// Your web app's Firebase configuration
+			// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+			const firebaseConfig = {
+				apiKey: "AIzaSyAjLxLVSXZ1X38HJ5u-CK6HWZai_Z3upZk",
+				authDomain: "seating-cdo.firebaseapp.com",
+				databaseURL: "https://seating-cdo-default-rtdb.firebaseio.com",
+				projectId: "seating-cdo",
+				storageBucket: "seating-cdo.appspot.com",
+				messagingSenderId: "475801771372",
+				appId: "1:475801771372:web:24b9a2d86bb976d6462749",
+				measurementId: "G-4FT8JBLEV4"
+			};
+
+			// Initialize Firebase
+			const app = initializeApp(firebaseConfig);
+			const analytics = getAnalytics(app);
+			const database = getDatabase(app);
+			const reservationsRef = ref(database, '/reservations');
 			var firstSeatLabel = 1;
 		
 			$(document).ready(function() {
+
+
 				var $cart = $('#selected-seats'),
 					$counter = $('#counter'),
 					$total = $('#total'),
@@ -99,6 +153,7 @@
 					naming : {
 						top : false,
 						getLabel : function (character, row, column) {
+						//	console.log(character + "-" + row + "-" + column)
 							return firstSeatLabel++;
 						},
 					},
@@ -106,16 +161,17 @@
 						node : $('#legend'),
 					    items : [
 							[ 'h', 'available',   'Platinum'],
-							[ 'f', 'available',   'Premium' ],
-							[ 'e', 'available',   'General'],
-							[ 'g', 'available',   'Preferencial'],
+							[ 'g', 'available',   'Premium'],
+							[ 'e', 'available',   'Preferencial'],
+							[ 'f', 'available',   'General' ],
 							[ 'f', 'unavailable', 'Reservado']
 					    ]					
 					},
 					click: function () {
 						if (this.status() == 'available') {
 							//let's create a new <li> which we'll add to the cart items
-							$('<li>'+this.data().category+' Seat # '+this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item">[cancel]</a></li>')
+							console.log(this.settings)
+							$('<li>'+this.data().category+' Asiento # '+this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item">[cancel]</a></li>')
 								.attr('id', 'cart-item-'+this.settings.id)
 								.data('seatId', this.settings.id)
 								.appendTo($cart);
@@ -128,6 +184,8 @@
 							 */
 							$counter.text(sc.find('selected').length+1);
 							$total.text(recalculateTotal(sc)+this.data().price);
+
+
 							
 							return 'selected';
 						} else if (this.status() == 'selected') {
@@ -157,8 +215,38 @@
 				});
 
 				//let's pretend some seats have already been booked
-				sc.get(['1_2', '4_1', '7_1', '7_2']).status('unavailable');
-		
+
+				$('#reservation').click(function() {
+					let name = $('#name').val();
+					let phone = $('#phone').val();
+					let email = $('#email').val();
+					sc.find('selected').seats.forEach(seat =>{
+						console.log(seat.settings);
+						set(ref(database, 'reservations/' + seat.settings.id), {
+							seat: seat.settings.id,
+							personName: name,
+							phone: phone,
+							email: email,
+							category: seat.settings.data.category,
+							price: seat.settings.data.price
+						});
+					})
+				});
+
+				onValue(reservationsRef, (snapshot) => {
+					snapshot.forEach(snap => {
+						const issue = snap.val();
+						sc.get(issue.seat).status('unavailable');
+						var tooltip = $("<span></span>").text("Reservado por " + issue.personName).addClass("tooltiptext");
+						// Create text with DOM
+						$('#' + issue.seat).append(tooltip);
+						$('#' + issue.seat).addClass("tooltip").css({
+							"position": "unset",
+							"opacity": "1"
+						});;
+						console.log($(issue.seat));
+					})
+				});
 		});
 
 		function recalculateTotal(sc) {

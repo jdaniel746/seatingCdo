@@ -58,7 +58,7 @@ div.seatCharts-seat.available {
 }
 div.seatCharts-seat.available.platinum-class {
 	/* 	background: url(vip.png); */
-	background-color: #fdf624;
+	background-color: #c7c002;
 }
 div.seatCharts-seat.available.first-class {
 /* 	background: url(vip.png); */
@@ -89,15 +89,17 @@ div.seatCharts-container {
 }
 div.seatCharts-legend {
 	padding-left: 0px;
-	position: absolute;
+	position: relative;
 	bottom: 16px;
 }
 ul.seatCharts-legendList {
 	padding-left: 0px;
+	display: flex;
 }
 span.seatCharts-legendDescription {
 	margin-left: 5px;
 	line-height: 30px;
+	margin-right: 10px;
 }
 .checkout-button {
 	display: block;
@@ -109,5 +111,48 @@ span.seatCharts-legendDescription {
 	overflow-y: scroll;
 	overflow-x: none;
 	width: 170px;
+}
+label, input{
+	display:block;
+}
+input.text {
+	margin-bottom:12px;
+	width:95%;
+	padding: .4em;
+}
+fieldset {
+	padding:0;
+	border:0;
+	margin-top:25px;
+}
+
+
+.tooltip .tooltiptext {
+	visibility: hidden;
+	width: 120px;
+	background-color: #555;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px 0;
+	position: absolute;
+	z-index: 1;
+	opacity: 0;
+	transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+	content: "";
+	position: absolute;
+
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+	visibility: visible;
+	opacity: 1;
 }
 
