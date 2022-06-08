@@ -8,7 +8,8 @@
 
 (function($) {
 		
-	//'use strict';	
+	//'use strict';
+	var leters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 		
 	$.fn.seatCharts = function (setup) {
 
@@ -27,7 +28,11 @@
 					top    : true,
 					left   : true,
 					getId  : function(character, row, column) {
-						return row + '_' + column;
+						let mask = '';
+						mask += 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+						let result = '';
+						for (let i = 8; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+						return result;
 					},
 					getLabel : function (character, row, column) {
 						return column;
@@ -156,7 +161,8 @@
 								if (callback == 'focus') {
 									//if there's already a focused element, we have to remove focus from it first
 									if (seatCharts.attr('aria-activedescendant') !== undefined) {
-										seats[seatCharts.attr('aria-activedescendant')].blur();
+										console.log(seatCharts.attr('aria-activedescendant'))
+										//seats[seatCharts.attr('aria-activedescendant')].blur();
 									}
 									seatCharts.attr('aria-activedescendant', seat.settings.id);
 									seat.node().focus();
@@ -362,7 +368,8 @@
 				$row.append(
 					$('<div></div>')
 						.addClass('seatCharts-cell seatCharts-space')
-						.text(settings.naming.rows[row])
+						//.text(settings.naming.rows[row])
+						.text(leters[settings.naming.rows.length - (row + 1)])
 				);
 			}
 
