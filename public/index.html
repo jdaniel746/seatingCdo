@@ -281,7 +281,7 @@
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
-							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
 							//and total
 							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
 
@@ -369,7 +369,7 @@
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
-							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
 							//and total
 							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
 
@@ -429,7 +429,7 @@
 				onValue(reservationsRef, (snapshot) => {
 					snapshot.forEach(snap => {
 						const issue = snap.val();
-						central.get(issue.seat) != undefined ? sc.get(issue.seat).status('unavailable'): scd.get(issue.seat) != undefined ? scd.get(issue.seat).status('unavailable') : sci.get(issue.seat).status('unavailable');
+						central.get(issue.seat) != undefined ? central.get(issue.seat).status('unavailable'): scd.get(issue.seat) != undefined ? scd.get(issue.seat).status('unavailable') : sci.get(issue.seat).status('unavailable');
 
 						var tooltip = $("<span></span>").text("Reservado por " + issue.personName).addClass("tooltiptext");
 						// Create text with DOM
