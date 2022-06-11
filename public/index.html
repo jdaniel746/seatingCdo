@@ -306,7 +306,7 @@
 						'fffffffffffff',
 						'fffffffffffff',
 						'fffffffffffff',
-						'--ggggggggggg',
+						'ggggggggggggg',
 					],
 					seats: {
 						h: {
@@ -445,12 +445,9 @@
 
 		function recalculateTotal(array) {
 			var total = 0;
-		
-			//basically find every selected seat and sum its price
 			array.find('selected').each(function () {
 				total += this.data().price;
 			});
-			
 			return total;
 		}
 		
