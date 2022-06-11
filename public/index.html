@@ -1,42 +1,460 @@
-<html lang="en">
+<html><head>
+		<title>JSC Demo</title>
+		
+		<link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" type="text/css" href="jquery.seat-charts.css">
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="theme-color" content="#000000">
-	<!--
-      manifest.json provides metadata used when your web app is added to the
-      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
-    -->
-	<link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-	<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-	<!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+	</head>
+	
+	<body>
+		<div class="wrapper">
+			<div class="container">
+				<div class="row">
+					<div id="seat-map" class="seatCharts-container" tabindex="0" aria-activedescendant="4_5">
+					</div>
+				</div>
+				<div class="row">
+					<div id="seat-map-lateral-der" class="seatCharts-container" tabindex="0" aria-activedescendant="4_5">
+					</div>
+					<div id="seat-map-lateral-izq" class="seatCharts-container" tabindex="0" aria-activedescendant="4_5">
+					</div>
+				</div>
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-	<title>CDO</title>
-</head>
+				<div class="booking-details">
+					<div id="legend" class="seatCharts-legend"></div>
+					<h2>Detalle de la compra</h2>
+					
+					<h3> Asiento(s) seleccionado(s) (<span id="counter">0</span>):</h3>
+					<ul id="selected-seats"></ul>
+					
+					Total: <b>$<span id="total">0</span></b>
+					
+					<button  class="checkout-button" data-toggle="modal" data-target="#myModal">Reservar</button>
+				</div>
+				<!-- Modal -->
+				<div class="modal fade" id="myModal" role="dialog">
+					<div class="modal-dialog">
 
-<body>
-	<noscript>
-		You need to enable JavaScript to run this app.
-	</noscript>
-	<div id="root"></div>
-	<!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+						<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Modal Header</h4>
+							</div>
+							<div class="modal-body">
+								<form>
+									<fieldset>
+										<label for="name">Nombres</label>
+										<input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all">
+										<label for="email">Email</label>
+										<input type="text" name="email" id="email"  class="text ui-widget-content ui-corner-all">
+										<label for="phone">Telefono</label>
+										<input type="text" name="phone" id="phone"  class="text ui-widget-content ui-corner-all">
+									</fieldset>
+								</form>
+							</div>
+							<div class="modal-footer">
+								<button type="button" id="reservation" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="jquery.seat-charts.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+		
+		<script type="module">
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-app.js";
+			import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-analytics.js";
+			import { getDatabase, ref, set, child, update, remove, onValue} from "https://www.gstatic.com/firebasejs/9.8.2/firebase-database.js"
+			// TODO: Add SDKs for Firebase products that you want to use
+			// https://firebase.google.com/docs/web/setup#available-libraries
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-</body>
+			// Your web app's Firebase configuration
+			// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+			const firebaseConfig = {
+				apiKey: "AIzaSyAjLxLVSXZ1X38HJ5u-CK6HWZai_Z3upZk",
+				authDomain: "seating-cdo.firebaseapp.com",
+				databaseURL: "https://seating-cdo-default-rtdb.firebaseio.com",
+				projectId: "seating-cdo",
+				storageBucket: "seating-cdo.appspot.com",
+				messagingSenderId: "475801771372",
+				appId: "1:475801771372:web:24b9a2d86bb976d6462749",
+				measurementId: "G-4FT8JBLEV4"
+			};
 
-</html>
+			// Initialize Firebase
+			const app = initializeApp(firebaseConfig);
+			const analytics = getAnalytics(app);
+			const database = getDatabase(app);
+			const reservationsRef = ref(database, '/reservations');
+			var leters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+			var firstSeatLabel = 1;
+			let rowCount = 1;
+			var totalRowsC = 0;
+			var totalRowsD = 0;
+			var totalRowsI = 0;
+			var map_center = [];
+
+		
+			$(document).ready(function() {
+
+				var $cart = $('#selected-seats'),
+					$counter = $('#counter'),
+					$total = $('#total'),
+					central = $('#seat-map').seatCharts({
+					map: [
+						'_fff____________________________________________________________________',
+						'ffff____________________________________________________________________',
+						'fffff_____________________________________________________________fffffff',
+						'ffffff____________________________________________________________fffffff',
+						'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
+						'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
+						'fffff____fffffffffffffff__fffffffff____ffffffff__fffffffffffff____fffffff',
+						'fffff___ffffffffffffffff__fffffffff____ffffffff__ffffffffffffff___fffffff',
+						'ffffff__ffffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
+						'fffffff__fffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
+						'fffffffff__fffffffffffff__fffffffff____ffffffff__ffffffffffffff__ffffff__',
+						'__fffffff____fffffffffff__fffffffff____ffffffff__ffffffffffff___fffff____',
+						'____ffffff______ffffffff__ggggggggggggggggggggg__ffffffffff____ffffff____',
+						'_____ffffff_______ffffff__ggggggggggggggggggggg__fffffff______ffffff_____',
+						'______ffffff________hhhh__hhhhhhhhhhhhhhhhhhhhh__hhhh________fffff_______',
+						'_________ffff_________hh__hhhhhhhhhhhhhhhhhhhhh__hh_________ffff_________',
+					],
+					seats: {
+						h: {
+							price   : 40,
+							classes : 'platinum-class', //your custom CSS class
+							category: 'Platinum'
+						},
+						g: {
+							price   : 20,
+							classes : 'first-class', //your custom CSS class
+							category: 'VIP'
+						},
+						f: {
+							price   : 10,
+							classes : 'economy-class', //your custom CSS class
+							category: 'General'
+						},
+						e: {
+							price   : 20,
+							classes : 'preferencial-class', //your custom CSS class
+							category: 'Preferencial'
+						}					
+					
+					},
+					naming : {
+						top : false,
+						getLabel : function (character, row, column) {
+							if(rowCount != row){
+								rowCount = row;
+								totalRowsC ++;
+								firstSeatLabel = 1;
+							}else{
+								firstSeatLabel++;
+							}
+							//return firstSeatLabel++;
+							return "";
+						},
+					},
+					legend : {
+						node : $('#legend'),
+					    items : [
+							[ 'h', 'available',   'Platinum'],
+							[ 'g', 'available',   'VIP'],
+							[ 'f', 'available',   'General' ],
+							[ 'f', 'unavailable', 'Reservado']
+					    ]					
+					},
+					click: function () {
+						if (this.status() == 'available') {
+							//let's create a new <li> which we'll add to the cart items
+							console.log(this.settings)
+							console.log("sc "+central)
+							$('<li>'+this.data().category+' Asiento # '+ leters[totalRowsC - this.settings.row] +  this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item-sc"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" style="color: red" viewBox="0 0 16 16">\n' +
+									'  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\n' +
+									'  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\n' +
+									'</svg></a></li>')
+								.attr('id', 'cart-item-'+this.settings.id)
+								.data('seatId', this.settings.id)
+								.appendTo($cart);
+
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
+							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+							
+							return 'selected';
+						} else if (this.status() == 'selected') {
+							//update the counter
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							//and total
+							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci))-this.data().price);
+						
+							//remove the item from our cart
+							$('#cart-item-'+this.settings.id).remove();
+						
+							//seat has been vacated
+							return 'available';
+						} else if (this.status() == 'unavailable') {
+							//seat has been already booked
+							return 'unavailable';
+						} else {
+							return this.style();
+						}
+					},
+					id:"central"
+				});
+
+				var scd = $('#seat-map-lateral-der').seatCharts({
+					map: [
+						'fffffffffffff',
+						'fffffffffffff',
+						'ggggggggggggg',
+						'ggggggggggggg',
+						'ggggggggggggg',
+						'ggggggggggggg',
+					],
+					seats: {
+						h: {
+							price   : 40,
+							classes : 'platinum-class', //your custom CSS class
+							category: 'Platinum'
+						},
+						g: {
+							price   : 20,
+							classes : 'first-class', //your custom CSS class
+							category: 'VIP'
+						},
+						f: {
+							price   : 10,
+							classes : 'economy-class', //your custom CSS class
+							category: 'General'
+						},
+						e: {
+							price   : 20,
+							classes : 'preferencial-class', //your custom CSS class
+							category: 'Preferencial'
+						}
+
+					},
+					naming : {
+						top : false,
+						getLabel : function (character, row, column) {
+							console.log(character + "-" + row + "-" + column)
+							if(rowCount != row){
+								rowCount = row;
+								totalRowsD++;
+								firstSeatLabel = 1;
+							}else{
+								firstSeatLabel++;
+							}
+							//return firstSeatLabel++;
+							return "";
+						},
+					},
+					legend : {
+						node : $('#legend'),
+						items : []
+					},
+					click: function () {
+						if (this.status() == 'available') {
+							//let's create a new <li> which we'll add to the cart items
+							console.log(this.settings)
+							console.log("totalRowsD:" + totalRowsD + "- this.settings.row:" + this.settings.row)
+							$('<li>'+this.data().category+' Asiento # ' + leters[(totalRowsD - 1) - this.settings.row] + this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item-scd"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" style="color: red" viewBox="0 0 16 16">\n' +
+									'  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\n' +
+									'  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\n' +
+									'</svg></a></li>')
+									.attr('id', 'cart-item-'+this.settings.id)
+									.data('seatId', this.settings.id)
+									.appendTo($cart);
+
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
+							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+
+							return 'selected';
+						} else if (this.status() == 'selected') {
+							//update the counter
+							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							//and total
+							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
+
+							//remove the item from our cart
+							$('#cart-item-'+this.settings.id).remove();
+
+							//seat has been vacated
+							return 'available';
+						} else if (this.status() == 'unavailable') {
+							//seat has been already booked
+							return 'unavailable';
+						} else {
+							return this.style();
+						}
+					},
+					id: "derecha"
+				});
+
+				var sci = $('#seat-map-lateral-izq').seatCharts({
+					map: [
+						'fffffffffffff',
+						'ggggggggggggg',
+						'ggggggggggggg',
+						'ggggggggggggg',
+						'--ggggggggggg',
+					],
+					seats: {
+						h: {
+							price   : 40,
+							classes : 'platinum-class', //your custom CSS class
+							category: 'Platinum'
+						},
+						g: {
+							price   : 20,
+							classes : 'first-class', //your custom CSS class
+							category: 'Premium'
+						},
+						f: {
+							price   : 10,
+							classes : 'economy-class', //your custom CSS class
+							category: 'General'
+						},
+						e: {
+							price   : 20,
+							classes : 'preferencial-class', //your custom CSS class
+							category: 'Preferencial'
+						}
+
+					},
+					naming : {
+						top : false,
+						getLabel : function (character, row, column) {
+							console.log(character + "-" + row + "-" + column)
+							if(rowCount != row){
+								rowCount = row;
+								totalRowsI++;
+								firstSeatLabel = 1;
+							}else{
+								firstSeatLabel++;
+							}
+							//return firstSeatLabel++;
+							return "";
+						},
+					},
+					legend : {
+						node : $('#legend'),
+						items : []
+					},
+					click: function () {
+						if (this.status() == 'available') {
+							//let's create a new <li> which we'll add to the cart items
+							console.log(this.settings)
+							console.log("totalRowsD:" + totalRowsI + "- this.settings.row:" + this.settings.row)
+							$('<li>'+this.data().category+' Asiento # ' + leters[(totalRowsI - 1) - this.settings.row] + this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item-sci"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" style="color: red" viewBox="0 0 16 16">\n' +
+									'  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\n' +
+									'  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\n' +
+									'</svg></a></li>')
+									.attr('id', 'cart-item-'+this.settings.id)
+									.data('seatId', this.settings.id)
+									.appendTo($cart);
+
+							$counter.text((central.find('selected').length + scd.find('selected').length + sci.find('selected').length) + 1);
+							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+
+							return 'selected';
+						} else if (this.status() == 'selected') {
+							//update the counter
+							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							//and total
+							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
+
+							//remove the item from our cart
+							$('#cart-item-'+this.settings.id).remove();
+
+							//seat has been vacated
+							return 'available';
+						} else if (this.status() == 'unavailable') {
+							//seat has been already booked
+							return 'unavailable';
+						} else {
+							return this.style();
+						}
+					},
+					id:"izquierda"
+				});
+
+				//this will handle "[cancel]" link clicks
+				$('#selected-seats').on('click', '.cancel-cart-item-sc', function () {
+					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
+					console.log("cancel " + $(this).parents('li:first').data('seatId'))
+					central.get($(this).parents('li:first').data('seatId')).click();
+				});
+				$('#selected-seats').on('click', '.cancel-cart-item-scd', function () {
+					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
+					console.log("cancel " + $(this).parents('li:first').data('seatId'))
+					scd.get($(this).parents('li:first').data('seatId')).click();
+				});
+				$('#selected-seats').on('click', '.cancel-cart-item-sci', function () {
+					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
+					console.log("cancel " + $(this).parents('li:first').data('seatId'))
+					sci.get($(this).parents('li:first').data('seatId')).click();
+				});
+
+				//let's pretend some seats have already been booked
+
+				$('#reservation').click(function() {
+					let name = $('#name').val();
+					let phone = $('#phone').val();
+					let email = $('#email').val();
+					let seats =  central.find('selected').seats.concat(scd.find('selected').seats).concat(sci.find('selected').seats);
+
+					seats.forEach(seat =>{
+						console.log(seat.settings);
+						set(ref(database, 'reservations/' + seat.settings.id), {
+							seat: seat.settings.id,
+							personName: name,
+							phone: phone,
+							email: email,
+							category: seat.settings.data.category,
+							price: seat.settings.data.price
+						});
+					});
+				});
+
+				onValue(reservationsRef, (snapshot) => {
+					snapshot.forEach(snap => {
+						const issue = snap.val();
+						central.get(issue.seat) != undefined ? sc.get(issue.seat).status('unavailable'): scd.get(issue.seat) != undefined ? scd.get(issue.seat).status('unavailable') : sci.get(issue.seat).status('unavailable');
+
+						var tooltip = $("<span></span>").text("Reservado por " + issue.personName).addClass("tooltiptext");
+						// Create text with DOM
+						$('#' + issue.seat).append(tooltip);
+						$('#' + issue.seat).addClass("tooltip").css({
+							"position": "unset",
+							"opacity": "1"
+						});
+						console.log($(issue.seat));
+					})
+				});
+		});
+
+		function recalculateTotal(array) {
+			var total = 0;
+		
+			//basically find every selected seat and sum its price
+			array.find('selected').each(function () {
+				total += this.data().price;
+			});
+			
+			return total;
+		}
+		
+		</script>
+	
+
+</body></html>
