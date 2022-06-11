@@ -58,11 +58,11 @@ div.seatCharts-seat.available {
 }
 div.seatCharts-seat.available.platinum-class {
 	/* 	background: url(vip.png); */
-	background-color: #d4af37;
+	background-color: #c0c0c0;
 }
 div.seatCharts-seat.available.first-class {
 /* 	background: url(vip.png); */
-	background-color: #8b7bb9;
+	background-color: #d4af37;
 }
 div.seatCharts-seat.available.preferencial-class {
 	/* 	background: url(vip.png); */
