@@ -163,7 +163,6 @@
 								if (callback == 'focus') {
 									//if there's already a focused element, we have to remove focus from it first
 									if (seatCharts.attr('aria-activedescendant') !== undefined) {
-										console.log(seatCharts.attr('aria-activedescendant'))
 										//seats[seatCharts.attr('aria-activedescendant')].blur();
 									}
 									seatCharts.attr('aria-activedescendant', seat.settings.id);
