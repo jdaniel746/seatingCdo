@@ -97,36 +97,36 @@
 			var leters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 			var firstSeatLabel = 1;
 			let rowCount = 1;
+			var $cart = $('#selected-seats');
+			var central;
+			var scd;
+			var sci;
 			var totalRowsC = 0;
 			var totalRowsD = 0;
 			var totalRowsI = 0;
-			var map_center = [];
+			var map_center = [
+				'_fff____________________________________________________________________',
+				'ffff____________________________________________________________________',
+				'fffff_____________________________________________________________fffffff',
+				'ffffff____________________________________________________________fffffff',
+				'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
+				'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
+				'fffff____fffffffffffffff__fffffffff____ffffffff__fffffffffffff____fffffff',
+				'fffff___ffffffffffffffff__fffffffff____ffffffff__ffffffffffffff___fffffff',
+				'ffffff__ffffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
+				'fffffff__fffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
+				'fffffffff__fffffffffffff__fffffffff____ffffffff__ffffffffffffff__ffffff__',
+				'__fffffff____fffffffffff__fffffffff____ffffffff__ffffffffffff___fffff____',
+				'____ffffff______gggggggg__ggggggggggggggggggggg__gggggggg____ffffff______',
+				'_____ffffff_______gggggg__ggggggggggggggggggggg__gggggg_____ffffff_______',
+				'_______hhhhh________hhhh__hhhhhhhhhhhhhhhhhhhhh__hhhh______hhhhh_________',
+				'_________hhhh________hhh__hhhhhhhhhhhhhhhhhhhhh__hhh______hhhh___________',];
 
 		
 			$(document).ready(function() {
 
-				var $cart = $('#selected-seats'),
-					$counter = $('#counter'),
-					$total = $('#total'),
-					central = $('#seat-map').seatCharts({
-					map: [
-						'_fff____________________________________________________________________',
-						'ffff____________________________________________________________________',
-						'fffff_____________________________________________________________fffffff',
-						'ffffff____________________________________________________________fffffff',
-						'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
-						'fffff____fffffffffffffff__fffffffff____ffffffff__ffffffffffff_____fffffff',
-						'fffff____fffffffffffffff__fffffffff____ffffffff__fffffffffffff____fffffff',
-						'fffff___ffffffffffffffff__fffffffff____ffffffff__ffffffffffffff___fffffff',
-						'ffffff__ffffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
-						'fffffff__fffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
-						'fffffffff__fffffffffffff__fffffffff____ffffffff__ffffffffffffff__ffffff__',
-						'__fffffff____fffffffffff__fffffffff____ffffffff__ffffffffffff___fffff____',
-						'____ffffff______gggggggg__ggggggggggggggggggggg__gggggggg____ffffff______',
-						'_____ffffff_______gggggg__ggggggggggggggggggggg__gggggg_____ffffff_______',
-						'_______hhhhh________hhhh__hhhhhhhhhhhhhhhhhhhhh__hhhh______hhhhh_________',
-						'_________hhhh________hhh__hhhhhhhhhhhhhhhhhhhhh__hhh______hhhh___________',
-					],
+				    central = $('#seat-map').seatCharts({
+					map: map_center,
 					seats: {
 						h: {
 							price   : 40,
@@ -176,8 +176,6 @@
 					click: function () {
 						if (this.status() == 'available') {
 							//let's create a new <li> which we'll add to the cart items
-							console.log(this.settings)
-							console.log("sc "+central)
 							$('<li>'+this.data().category+' Asiento # '+ leters[totalRowsC - this.settings.row] +  this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item-sc"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" style="color: red" viewBox="0 0 16 16">\n' +
 									'  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\n' +
 									'  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\n' +
@@ -186,16 +184,16 @@
 								.data('seatId', this.settings.id)
 								.appendTo($cart);
 
-							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
-							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
-							
+							//$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
+							//$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+							recalculateTotal("ADD", this.data())
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
-							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							//$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
 							//and total
-							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci))-this.data().price);
-						
+							//$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci))-this.data().price);
+							recalculateTotal("DEL", this.data())
 							//remove the item from our cart
 							$('#cart-item-'+this.settings.id).remove();
 						
@@ -211,7 +209,7 @@
 					id:"central"
 				});
 
-				var scd = $('#seat-map-lateral-der').seatCharts({
+				   scd = $('#seat-map-lateral-der').seatCharts({
 					map: [
 						'fffffffffffff',
 						'fffffffffffff',
@@ -246,7 +244,6 @@
 					naming : {
 						top : false,
 						getLabel : function (character, row, column) {
-							console.log(character + "-" + row + "-" + column)
 							if(rowCount != row){
 								rowCount = row;
 								totalRowsD++;
@@ -265,8 +262,6 @@
 					click: function () {
 						if (this.status() == 'available') {
 							//let's create a new <li> which we'll add to the cart items
-							console.log(this.settings)
-							console.log("totalRowsD:" + totalRowsD + "- this.settings.row:" + this.settings.row)
 							$('<li>'+this.data().category+' Asiento # ' + leters[(totalRowsD - 1) - this.settings.row] + this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item-scd"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" style="color: red" viewBox="0 0 16 16">\n' +
 									'  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\n' +
 									'  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\n' +
@@ -274,21 +269,20 @@
 									.attr('id', 'cart-item-'+this.settings.id)
 									.data('seatId', this.settings.id)
 									.appendTo($cart);
-
-							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
-							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+							recalculateTotal("ADD", this.data())
+							//$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
+							//$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
 
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
-							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							//$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
 							//and total
-							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
-
+							//$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
+							recalculateTotal("DEL", this.data())
 							//remove the item from our cart
 							$('#cart-item-'+this.settings.id).remove();
 
-							//seat has been vacated
 							return 'available';
 						} else if (this.status() == 'unavailable') {
 							//seat has been already booked
@@ -300,7 +294,7 @@
 					id: "derecha"
 				});
 
-				var sci = $('#seat-map-lateral-izq').seatCharts({
+				    sci = $('#seat-map-lateral-izq').seatCharts({
 					map: [
 						'fffffffffffff',
 						'fffffffffffff',
@@ -334,7 +328,6 @@
 					naming : {
 						top : false,
 						getLabel : function (character, row, column) {
-							console.log(character + "-" + row + "-" + column)
 							if(rowCount != row){
 								rowCount = row;
 								totalRowsI++;
@@ -353,8 +346,6 @@
 					click: function () {
 						if (this.status() == 'available') {
 							//let's create a new <li> which we'll add to the cart items
-							console.log(this.settings)
-							console.log("totalRowsD:" + totalRowsI + "- this.settings.row:" + this.settings.row)
 							$('<li>'+this.data().category+' Asiento # ' + leters[(totalRowsI - 1) - this.settings.row] + this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item-sci"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" style="color: red" viewBox="0 0 16 16">\n' +
 									'  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\n' +
 									'  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\n' +
@@ -363,17 +354,12 @@
 									.data('seatId', this.settings.id)
 									.appendTo($cart);
 
-							$counter.text((central.find('selected').length + scd.find('selected').length + sci.find('selected').length) + 1);
-							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+							recalculateTotal('ADD', this.data());
 
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
-							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
-							//and total
-							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
-
-							//remove the item from our cart
+							recalculateTotal('DEL', this.data());
 							$('#cart-item-'+this.settings.id).remove();
 
 							//seat has been vacated
@@ -390,22 +376,14 @@
 
 				//this will handle "[cancel]" link clicks
 				$('#selected-seats').on('click', '.cancel-cart-item-sc', function () {
-					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
-					console.log("cancel " + $(this).parents('li:first').data('seatId'))
 					central.get($(this).parents('li:first').data('seatId')).click();
 				});
 				$('#selected-seats').on('click', '.cancel-cart-item-scd', function () {
-					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
-					console.log("cancel " + $(this).parents('li:first').data('seatId'))
 					scd.get($(this).parents('li:first').data('seatId')).click();
 				});
 				$('#selected-seats').on('click', '.cancel-cart-item-sci', function () {
-					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
-					console.log("cancel " + $(this).parents('li:first').data('seatId'))
 					sci.get($(this).parents('li:first').data('seatId')).click();
 				});
-
-				//let's pretend some seats have already been booked
 
 				$('#reservation').click(function() {
 					let name = $('#name').val();
@@ -414,7 +392,9 @@
 					let seats =  central.find('selected').seats.concat(scd.find('selected').seats).concat(sci.find('selected').seats);
 
 					seats.forEach(seat =>{
-						console.log(seat.settings);
+						$('#cart-item-' + seat.settings.id).remove();
+						$('#total').text(0);
+						$('#counter').text(0);
 						set(ref(database, 'reservations/' + seat.settings.id), {
 							seat: seat.settings.id,
 							personName: name,
@@ -430,25 +410,30 @@
 					snapshot.forEach(snap => {
 						const issue = snap.val();
 						central.get(issue.seat) != undefined ? central.get(issue.seat).status('unavailable'): scd.get(issue.seat) != undefined ? scd.get(issue.seat).status('unavailable') : sci.get(issue.seat).status('unavailable');
-
 						var tooltip = $("<span></span>").text("Reservado por " + issue.personName).addClass("tooltiptext");
-						// Create text with DOM
 						$('#' + issue.seat).append(tooltip);
 						$('#' + issue.seat).addClass("tooltip").css({
 							"position": "unset",
 							"opacity": "1"
 						});
-						console.log($(issue.seat));
 					})
 				});
 		});
 
-		function recalculateTotal(array) {
+		function recalculateTotal(op, element) {
 			var total = 0;
-			array.find('selected').each(function () {
-				total += this.data().price;
-			});
-			return total;
+
+			let seats =  central.find('selected').seats.concat(scd.find('selected').seats).concat(sci.find('selected').seats);
+			seats.forEach(seat => {
+				total += seat.settings.data.price;
+			})
+			if(op == "ADD") {
+				$('#total').text(total + element.price);
+				$('#counter').text(seats.length ? seats.length + 1 : 0);
+			}else{
+				$('#total').text(total - element.price);
+				$('#counter').text(seats.length ? seats.length - 1 : 0);
+			}
 		}
 		
 		</script>
