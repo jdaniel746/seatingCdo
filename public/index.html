@@ -96,18 +96,19 @@
 			const reservationsRef = ref(database, '/reservations');
 			var leters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 			var firstSeatLabel = 1;
-			var rowCount = 1;
+			let rowCount = 1;
 			var totalRowsC = 0;
 			var totalRowsD = 0;
 			var totalRowsI = 0;
+			var map_center = [];
+
 		
 			$(document).ready(function() {
-
 
 				var $cart = $('#selected-seats'),
 					$counter = $('#counter'),
 					$total = $('#total'),
-					sc = $('#seat-map').seatCharts({
+					central = $('#seat-map').seatCharts({
 					map: [
 						'_fff____________________________________________________________________',
 						'ffff____________________________________________________________________',
@@ -121,8 +122,8 @@
 						'fffffff__fffffffffffffff__fffffffff____ffffffff__fffffffffffffff__fffffff',
 						'fffffffff__fffffffffffff__fffffffff____ffffffff__ffffffffffffff__ffffff__',
 						'__fffffff____fffffffffff__fffffffff____ffffffff__ffffffffffff___fffff____',
-						'____ffffff______ffffffff__fffffffffffffffffffff__ffffffffff____ffffff____',
-						'_____ffffff_______ffffff__fffffffffffffffffffff__fffffff______ffffff_____',
+						'____ffffff______ffffffff__ggggggggggggggggggggg__ffffffffff____ffffff____',
+						'_____ffffff_______ffffff__ggggggggggggggggggggg__fffffff______ffffff_____',
 						'______ffffff________hhhh__hhhhhhhhhhhhhhhhhhhhh__hhhh________fffff_______',
 						'_________ffff_________hh__hhhhhhhhhhhhhhhhhhhhh__hh_________ffff_________',
 					],
@@ -133,9 +134,9 @@
 							category: 'Platinum'
 						},
 						g: {
-							price   : 30,
+							price   : 20,
 							classes : 'first-class', //your custom CSS class
-							category: 'Premium'
+							category: 'VIP'
 						},
 						f: {
 							price   : 10,
@@ -152,7 +153,6 @@
 					naming : {
 						top : false,
 						getLabel : function (character, row, column) {
-							console.log(character + "-" + row + "-" + column)
 							if(rowCount != row){
 								rowCount = row;
 								totalRowsC ++;
@@ -161,7 +161,7 @@
 								firstSeatLabel++;
 							}
 							//return firstSeatLabel++;
-							return firstSeatLabel;
+							return "";
 						},
 					},
 					legend : {
@@ -177,7 +177,7 @@
 						if (this.status() == 'available') {
 							//let's create a new <li> which we'll add to the cart items
 							console.log(this.settings)
-							console.log("sc "+sc)
+							console.log("sc "+central)
 							$('<li>'+this.data().category+' Asiento # '+ leters[totalRowsC - this.settings.row] +  this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item-sc"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" style="color: red" viewBox="0 0 16 16">\n' +
 									'  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\n' +
 									'  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\n' +
@@ -185,22 +185,16 @@
 								.attr('id', 'cart-item-'+this.settings.id)
 								.data('seatId', this.settings.id)
 								.appendTo($cart);
-							
-							/*
-							 * Lets update the counter and total
-							 *
-							 * .find function will not find the current seat, because it will change its stauts only after return
-							 * 'selected'. This is why we have to add 1 to the length and the current seat price to the total.
-							 */
-							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
-							$total.text(recalculateTotal(sc) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
+							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
 							
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
-							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
 							//and total
-							$total.text((recalculateTotal(sc) + recalculateTotal(scd) + recalculateTotal(sci))-this.data().price);
+							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci))-this.data().price);
 						
 							//remove the item from our cart
 							$('#cart-item-'+this.settings.id).remove();
@@ -213,15 +207,16 @@
 						} else {
 							return this.style();
 						}
-					}
+					},
+					id:"central"
 				});
 
 				var scd = $('#seat-map-lateral-der').seatCharts({
 					map: [
 						'fffffffffffff',
 						'fffffffffffff',
-						'fffffffffffff',
-						'fffffffffffff',
+						'ggggggggggggg',
+						'ggggggggggggg',
 						'ggggggggggggg',
 						'ggggggggggggg',
 					],
@@ -232,9 +227,9 @@
 							category: 'Platinum'
 						},
 						g: {
-							price   : 30,
+							price   : 20,
 							classes : 'first-class', //your custom CSS class
-							category: 'Premium'
+							category: 'VIP'
 						},
 						f: {
 							price   : 10,
@@ -260,7 +255,7 @@
 								firstSeatLabel++;
 							}
 							//return firstSeatLabel++;
-							return firstSeatLabel;
+							return "";
 						},
 					},
 					legend : {
@@ -280,15 +275,15 @@
 									.data('seatId', this.settings.id)
 									.appendTo($cart);
 
-							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
-							$total.text(recalculateTotal(sc) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+							$counter.text((central.find('selected').length  + scd.find('selected').length + sci.find('selected').length) + 1);
+							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
 
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
 							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
 							//and total
-							$total.text((recalculateTotal(sc) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
+							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
 
 							//remove the item from our cart
 							$('#cart-item-'+this.settings.id).remove();
@@ -301,14 +296,15 @@
 						} else {
 							return this.style();
 						}
-					}
+					},
+					id: "derecha"
 				});
 
 				var sci = $('#seat-map-lateral-izq').seatCharts({
 					map: [
 						'fffffffffffff',
-						'fffffffffffff',
-						'fffffffffffff',
+						'ggggggggggggg',
+						'ggggggggggggg',
 						'ggggggggggggg',
 						'--ggggggggggg',
 					],
@@ -319,7 +315,7 @@
 							category: 'Platinum'
 						},
 						g: {
-							price   : 30,
+							price   : 20,
 							classes : 'first-class', //your custom CSS class
 							category: 'Premium'
 						},
@@ -347,7 +343,7 @@
 								firstSeatLabel++;
 							}
 							//return firstSeatLabel++;
-							return firstSeatLabel;
+							return "";
 						},
 					},
 					legend : {
@@ -367,15 +363,15 @@
 									.data('seatId', this.settings.id)
 									.appendTo($cart);
 
-							$counter.text((sc.find('selected').length + scd.find('selected').length + sci.find('selected').length) + 1);
-							$total.text(recalculateTotal(sc) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
+							$counter.text((central.find('selected').length + scd.find('selected').length + sci.find('selected').length) + 1);
+							$total.text(recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci) + this.data().price);
 
 							return 'selected';
 						} else if (this.status() == 'selected') {
 							//update the counter
 							$counter.text((sc.find('selected').length  + scd.find('selected').length + sci.find('selected').length) - 1);
 							//and total
-							$total.text((recalculateTotal(sc) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
+							$total.text((recalculateTotal(central) + recalculateTotal(scd) + recalculateTotal(sci)) - this.data().price);
 
 							//remove the item from our cart
 							$('#cart-item-'+this.settings.id).remove();
@@ -388,14 +384,15 @@
 						} else {
 							return this.style();
 						}
-					}
+					},
+					id:"izquierda"
 				});
 
 				//this will handle "[cancel]" link clicks
 				$('#selected-seats').on('click', '.cancel-cart-item-sc', function () {
 					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
 					console.log("cancel " + $(this).parents('li:first').data('seatId'))
-					sc.get($(this).parents('li:first').data('seatId')).click();
+					central.get($(this).parents('li:first').data('seatId')).click();
 				});
 				$('#selected-seats').on('click', '.cancel-cart-item-scd', function () {
 					//let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
@@ -414,7 +411,9 @@
 					let name = $('#name').val();
 					let phone = $('#phone').val();
 					let email = $('#email').val();
-					sc.find('selected').seats.forEach(seat =>{
+					let seats =  central.find('selected').seats.concat(scd.find('selected').seats).concat(sci.find('selected').seats);
+
+					seats.forEach(seat =>{
 						console.log(seat.settings);
 						set(ref(database, 'reservations/' + seat.settings.id), {
 							seat: seat.settings.id,
@@ -425,24 +424,13 @@
 							price: seat.settings.data.price
 						});
 					});
-					scl.find('selected').seats.forEach(seat =>{
-						console.log(seat.settings);
-						set(ref(database, 'reservations/' + seat.settings.id), {
-							seat: seat.settings.id,
-							personName: name,
-							phone: phone,
-							email: email,
-							category: seat.settings.data.category,
-							price: seat.settings.data.price
-						});
-					})
 				});
 
 				onValue(reservationsRef, (snapshot) => {
 					snapshot.forEach(snap => {
 						const issue = snap.val();
-						sc.get(issue.seat).status('unavailable');
-						scl.get(issue.seat).status('unavailable');
+						central.get(issue.seat) != undefined ? sc.get(issue.seat).status('unavailable'): scd.get(issue.seat) != undefined ? scd.get(issue.seat).status('unavailable') : sci.get(issue.seat).status('unavailable');
+
 						var tooltip = $("<span></span>").text("Reservado por " + issue.personName).addClass("tooltiptext");
 						// Create text with DOM
 						$('#' + issue.seat).append(tooltip);
@@ -455,11 +443,11 @@
 				});
 		});
 
-		function recalculateTotal(sc) {
+		function recalculateTotal(array) {
 			var total = 0;
 		
 			//basically find every selected seat and sum its price
-			sc.find('selected').each(function () {
+			array.find('selected').each(function () {
 				total += this.data().price;
 			});
 			

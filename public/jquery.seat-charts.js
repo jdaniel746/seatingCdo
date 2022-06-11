@@ -13,6 +13,7 @@
 		
 	$.fn.seatCharts = function (setup) {
 
+		var idBlock = setup.id;
 		//if there's seatCharts object associated with the current element, return it
 		if (this.data('seatCharts')) {
 			return this.data('seatCharts');
@@ -31,7 +32,8 @@
 						let mask = '';
 						mask += 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 						let result = '';
-						for (let i = 8; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+						//for (let i = 8; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+						result = idBlock + '_' + row + '_' + column;
 						return result;
 					},
 					getLabel : function (character, row, column) {
